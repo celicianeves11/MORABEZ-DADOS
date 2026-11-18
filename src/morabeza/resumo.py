@@ -8,6 +8,15 @@ import sys
 
 
 def ler_vendas(caminho: str) -> list[dict]:
+    
+    vendas = []
+    with open(caminho, encoding="utf-8") as ficheiro:
+        leitor = csv.DictReader(ficheiro)
+        for linha in leitor:
+            linha["quantidade"] = int(linha["quantidade"])
+            linha["preco_unitario"] = int(linha["preco_unitario"])
+            vendas.append(linha)
+    return vendas
     """Lê o CSV de vendas e devolve uma lista de dicionários, um por venda.
 
     O módulo csv lê tudo como texto. As colunas quantidade e preco_unitario
@@ -21,18 +30,26 @@ def ler_vendas(caminho: str) -> list[dict]:
 
 
 def total_venda(venda: dict) -> int:
+    return venda["quantidade"] * venda["preco_unitario"]
     """Valor de uma venda em escudos: quantidade vezes preço unitário."""
     # TODO: devolve a quantidade vezes o preço unitário.
     raise NotImplementedError("total_venda ainda não está feita")
 
 
 def faturacao_total(vendas: list[dict]) -> int:
+    return sum(total_venda(v) for v in vendas)
     """Soma do valor de todas as vendas."""
     # TODO: começa com total = 0 e soma total_venda(venda) de cada venda.
     raise NotImplementedError("faturacao_total ainda não está feita")
 
 
 def faturacao_por_ilha(vendas: list[dict]) -> dict[str, int]:
+    por_ilha = {}
+    for venda in vendas:
+        ilha = venda["ilha"]
+        valor = total_venda(venda)
+        por_ilha[ilha] = por_ilha.get(ilha, 0) + valor
+    return por_ilha
     """Dicionário {ilha: faturação} com a soma das vendas de cada ilha."""
     # TODO: cria um dicionário vazio e, para cada venda, soma total_venda(venda)
     # na chave da ilha respetiva. Dica: por_ilha.get(ilha, 0) devolve 0 se a ilha ainda não existir.
@@ -40,6 +57,9 @@ def faturacao_por_ilha(vendas: list[dict]) -> dict[str, int]:
 
 
 def ilha_top(por_ilha: dict[str, int]) -> str:
+    if not por_ilha:
+        return None
+    return max(por_ilha, key=por_ilha.get)
     """Nome da ilha com maior faturação."""
     # TODO: devolve a chave com o maior valor. Dica: max(por_ilha, key=por_ilha.get).
     raise NotImplementedError("ilha_top ainda não está feita")
@@ -48,6 +68,12 @@ def ilha_top(por_ilha: dict[str, int]) -> str:
 # ---------------------------------------------------------------- Extensão (opcional)
 
 def faturacao_mensal(vendas: list[dict]) -> dict[str, int]:
+    por_mes = {}
+    for venda in vendas:
+        mes = venda["data"][:7]
+        valor = total_venda(venda)
+        por_mes[mes] = por_mes.get(mes, 0) + valor
+    return por_mes
     """Dicionário {"AAAA-MM": faturação}, ordenado por mês."""
     # EXTENSÃO: igual a faturacao_por_ilha, mas a chave é o mês. O mês são os
     # 7 primeiros caracteres da data: venda["data"][:7] dá "2025-01".
@@ -55,7 +81,8 @@ def faturacao_mensal(vendas: list[dict]) -> dict[str, int]:
     raise NotImplementedError("Extensão por fazer")
 
 
-def formatar_cve(valor: int) -> str:
+def formatar_cve(valor):
+    return f"{valor:,}".replace(",", " ") + "CVE"
     """Formata um valor em escudos com espaço a separar os milhares: 1530740 -> '1 530 740 CVE'."""
     # EXTENSÃO: f"{valor:,}" dá "1,530,740". Troca as vírgulas por espaços e junta " CVE".
     raise NotImplementedError("Extensão por fazer")
